@@ -523,10 +523,15 @@ async function sendReply(threadIdx, studentName) {
     alert("Could not send reply. Check connection.");
   }
 }
+
+async function loadChat() {
   if(!SCRIPT_URL) return;
   try {
-    const res=await fetch(SCRIPT_URL+"?action=getChat");
-    const data=await res.json();
+    const controller = new AbortController();
+    const tid = setTimeout(()=>controller.abort(), 8000);
+    const res = await fetch(SCRIPT_URL+"?action=getChat", {signal:controller.signal});
+    clearTimeout(tid);
+    const data = await res.json();
     renderChatFeed("chat-feed", data, false);
   } catch(e) {}
 }
@@ -534,8 +539,11 @@ async function sendReply(threadIdx, studentName) {
 async function loadTeacherChat() {
   if(!SCRIPT_URL) return;
   try {
-    const res=await fetch(SCRIPT_URL+"?action=getChat");
-    const data=await res.json();
+    const controller = new AbortController();
+    const tid = setTimeout(()=>controller.abort(), 8000);
+    const res = await fetch(SCRIPT_URL+"?action=getChat", {signal:controller.signal});
+    clearTimeout(tid);
+    const data = await res.json();
     renderChatFeed("teacher-chat-feed", data, true);
   } catch(e) {}
 }
@@ -644,7 +652,7 @@ async function toggleHighlight(idx, feedId) {
 
 function startChatRefresh() {
   stopChatRefresh();
-  chatRefreshTimer=setInterval(loadChat,10000);
+  chatRefreshTimer=setInterval(()=>{ try{loadChat();}catch(e){} },20000);
 }
 
 function stopChatRefresh() {
@@ -666,11 +674,14 @@ if(SCRIPT_URL) document.getElementById("script-url-input").value=SCRIPT_URL;
 async function loadDashboard() {
   if(!SCRIPT_URL){ document.getElementById("d-students").innerHTML='<p style="color:#334155;font-size:13px;">Paste your Apps Script URL above first.</p>'; return; }
   try {
-    const res=await fetch(SCRIPT_URL+"?action=getAll");
+    const controller = new AbortController();
+    const tid = setTimeout(()=>controller.abort(), 10000);
+    const res=await fetch(SCRIPT_URL+"?action=getAll", {signal:controller.signal});
+    clearTimeout(tid);
     const data=await res.json();
     renderDashboard(data);
   } catch(e) {
-    document.getElementById("d-students").innerHTML='<p style="color:#f87171;font-size:13px;">Could not load data. Check URL.</p>';
+    document.getElementById("d-students").innerHTML='<p style="color:#f87171;font-size:13px;">Could not load data. Check URL or try again.</p>';
   }
 }
 
