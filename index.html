@@ -101,7 +101,20 @@
     <h1>What kind of work<br>were you built for?</h1>
     <p>Answer 15 questions. We'll map your behavioral profile and match you to job archetypes — grounded in organizational theory.</p>
     <p style="font-size:12px; color:#334155; margin-top:8px;">Simon · Kahneman · Fayol · Taylor · Newell & Simon · Mintzberg · Weick</p>
-    <input class="name-input" id="student-name" placeholder="Enter your name before starting..." style="margin-top:20px;" />
+    <input class="name-input" id="student-name" placeholder="Full name..." style="margin-top:20px;" />
+    <select class="name-input" id="student-edlevel">
+      <option value="" disabled selected>Education level...</option>
+      <option>Undergraduate Year 1</option>
+      <option>Undergraduate Year 2</option>
+      <option>Undergraduate Year 3</option>
+      <option>Undergraduate Year 4</option>
+      <option>MBA</option>
+      <option>Executive MBA</option>
+      <option>PhD</option>
+      <option>Other</option>
+    </select>
+    <input class="name-input" id="student-program" placeholder="Program / Major (e.g. Management, Finance)..." />
+    <input class="name-input" id="student-semester" placeholder="Semester / Year (e.g. 1/2568)..." />
     <button class="submit-btn" onclick="startQuiz()">Begin Assessment →</button>
   </div>
 
@@ -181,6 +194,9 @@
     <div class="section-label">TYPE DISTRIBUTION</div>
     <div id="d-distribution"></div>
 
+    <div class="section-label">EDUCATION LEVEL BREAKDOWN</div>
+    <div id="d-edlevel"></div>
+
     <div class="section-label">ALL STUDENTS</div>
     <div id="d-students"></div>
   </div>
@@ -235,6 +251,9 @@ const JOBS = [
 let current = 0;
 let answers = {};
 let studentName = "";
+let studentEdLevel = "";
+let studentProgram = "";
+let studentSemester = "";
 let computedVec = null;
 let computedTop = null;
 let SCRIPT_URL = localStorage.getItem("scriptUrl") || "";
@@ -254,8 +273,13 @@ function showTab(tab) {
 // QUIZ
 // ═══════════════════════════════════════════════════════════
 function startQuiz() {
-  studentName = document.getElementById("student-name").value.trim();
-  if (!studentName) { alert("Please enter your name first."); return; }
+  studentName     = document.getElementById("student-name").value.trim();
+  studentEdLevel  = document.getElementById("student-edlevel").value.trim();
+  studentProgram  = document.getElementById("student-program").value.trim();
+  studentSemester = document.getElementById("student-semester").value.trim();
+  if (!studentName)    { alert("Please enter your name."); return; }
+  if (!studentEdLevel) { alert("Please select your education level."); return; }
+  if (!studentProgram) { alert("Please enter your program / major."); return; }
   document.getElementById("s-intro").style.display = "none";
   document.getElementById("s-quiz").style.display = "block";
   renderQuestion();
@@ -427,15 +451,18 @@ async function submitResult() {
   document.getElementById("r-status").textContent = "";
 
   const payload = {
-    name: studentName,
+    name:      studentName,
+    edLevel:   studentEdLevel,
+    program:   studentProgram,
+    semester:  studentSemester,
     timestamp: new Date().toISOString(),
     F1: computedVec.F1.toFixed(3),
     F2: computedVec.F2.toFixed(3),
     F3: computedVec.F3.toFixed(3),
     F4: computedVec.F4.toFixed(3),
     F5: computedVec.F5.toFixed(3),
-    topMatch: computedTop.name,
-    fitScore: (computedTop.score * 100).toFixed(1),
+    topMatch:  computedTop.name,
+    fitScore:  (computedTop.score * 100).toFixed(1),
   };
 
   try {
@@ -552,6 +579,20 @@ function renderDashboard(rows) {
   });
   document.getElementById("d-distribution").innerHTML = distHtml;
 
+  // ed level breakdown
+  const edCounts = {};
+  rows.forEach(r => { edCounts[r.edLevel || "Unknown"] = (edCounts[r.edLevel || "Unknown"] || 0) + 1; });
+  let edHtml = "";
+  Object.entries(edCounts).sort((a,b)=>b[1]-a[1]).forEach(([level, count]) => {
+    edHtml += `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <span style="color:#818cf8;font-size:12px;flex:1;font-family:monospace;">${level}</span>
+        <span style="color:#475569;font-size:12px;font-family:monospace;">${count} students</span>
+      </div>`;
+  });
+
+  document.getElementById("d-edlevel").innerHTML = edHtml;
+
   // student list
   let studHtml = "";
   rows.forEach(r => {
@@ -561,7 +602,7 @@ function renderDashboard(rows) {
         <span class="student-icon">${job ? job.icon : "👤"}</span>
         <div style="flex:1;">
           <div class="student-name">${r.name}</div>
-          <div class="student-type">${r.topMatch}</div>
+          <div class="student-type">${r.topMatch} · ${r.edLevel || ""} · ${r.program || ""}</div>
         </div>
         <span class="student-pct" style="color:#818cf8;">${r.fitScore}%</span>
       </div>`;
