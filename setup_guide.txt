@@ -1,0 +1,166 @@
+═══════════════════════════════════════════════════════════════
+5-FACTOR WORK ASSESSMENT — SETUP GUIDE
+Deploy in ~10 minutes, no coding knowledge needed
+═══════════════════════════════════════════════════════════════
+
+WHAT YOU NEED
+─────────────
+✅ A Google Account
+✅ The two files: work_assessment_classroom.html + appsscript.gs
+
+═══════════════════════════════════════════════════════════════
+STEP 1 — CREATE A GOOGLE SHEET
+═══════════════════════════════════════════════════════════════
+
+1. Go to sheets.google.com
+2. Click "+" to create a new blank spreadsheet
+3. Name it: "Work Assessment Results" (or anything you like)
+4. Leave it open — you'll come back to it
+
+
+═══════════════════════════════════════════════════════════════
+STEP 2 — ADD THE APPS SCRIPT
+═══════════════════════════════════════════════════════════════
+
+1. In your Google Sheet, click: Extensions → Apps Script
+   (A new tab opens — this is the script editor)
+
+2. Delete everything in the editor (Ctrl+A, Delete)
+
+3. Open the file "appsscript.gs" in a text editor
+   Copy ALL the content
+
+4. Paste it into the Apps Script editor
+
+5. Click the 💾 Save button (or Ctrl+S)
+   Name the project: "Work Assessment" when prompted
+
+
+═══════════════════════════════════════════════════════════════
+STEP 3 — DEPLOY AS WEB APP
+═══════════════════════════════════════════════════════════════
+
+1. In the Apps Script editor, click "Deploy" → "New deployment"
+
+2. Click the gear icon ⚙ next to "Type" → select "Web app"
+
+3. Fill in the settings:
+   Description:        Work Assessment API
+   Execute as:         Me
+   Who has access:     Anyone   ← IMPORTANT: must be "Anyone"
+
+4. Click "Deploy"
+
+5. Google will ask you to authorize — click "Authorize access"
+   → Choose your Google account
+   → Click "Advanced" → "Go to Work Assessment (unsafe)"
+   → Click "Allow"
+
+6. COPY THE WEB APP URL
+   It looks like:
+   https://script.google.com/macros/s/AKfycb.../exec
+   
+   ⚠️  SAVE THIS URL — you need it in Step 4
+
+
+═══════════════════════════════════════════════════════════════
+STEP 4 — CONFIGURE THE HTML FILE
+═══════════════════════════════════════════════════════════════
+
+1. Open "work_assessment_classroom.html" in any web browser
+   (just double-click the file)
+
+2. Click the "📊 TEACHER DASHBOARD" tab
+
+3. Paste your Web App URL into the input box
+   under "Connect to Google Sheet"
+
+4. Click "Save URL"
+
+Done! The URL is saved in the browser's local storage.
+
+
+═══════════════════════════════════════════════════════════════
+STEP 5 — SHARE WITH STUDENTS
+═══════════════════════════════════════════════════════════════
+
+OPTION A — Local file (simplest)
+  Share the HTML file via USB drive, email, or Google Drive
+  Students open it in their browser — works offline for the quiz
+  They need internet only to click "Submit to Class"
+
+OPTION B — Google Sites (shareable link)
+  1. Go to sites.google.com → New site
+  2. Insert → Embed → Embed code
+  3. You cannot directly embed a local HTML file this way
+  → Better: use GitHub Pages or Netlify (free, 2 minutes)
+
+OPTION C — GitHub Pages (recommended for sharing)
+  1. Go to github.com → New repository (name: work-assessment)
+  2. Upload work_assessment_classroom.html
+  3. Rename it to: index.html
+  4. Go to Settings → Pages → Source: main branch
+  5. Your URL: https://yourusername.github.io/work-assessment
+  Share this link with all students
+
+
+═══════════════════════════════════════════════════════════════
+CLASSROOM WORKFLOW
+═══════════════════════════════════════════════════════════════
+
+1. Share the link / file with students (5 minutes before class)
+
+2. Students:
+   → Enter their name
+   → Answer 15 questions (~3 minutes)
+   → See their result (job archetype + F1–F5 radar)
+   → Click "Submit to Class"
+
+3. Teacher:
+   → Open the Teacher Dashboard tab
+   → Click "Refresh Data"
+   → See all students' profiles, class average, coverage gaps
+
+4. Class discussion:
+   → Which types dominate?
+   → What does the class collectively lack?
+   → If this class were a team — what project would fit best?
+
+
+═══════════════════════════════════════════════════════════════
+VIEWING RAW DATA
+═══════════════════════════════════════════════════════════════
+
+All submissions are stored in your Google Sheet (tab: "Results")
+Columns: Timestamp | Name | F1 | F2 | F3 | F4 | F5 | Top Match | Fit Score
+
+You can:
+- Download as Excel/CSV anytime
+- Use for research data collection
+- Run your own analysis
+
+
+═══════════════════════════════════════════════════════════════
+TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+"Could not connect" when submitting:
+→ Check the Apps Script URL is correct
+→ Make sure "Who has access" is set to "Anyone" (not "Anyone with link")
+→ Try redeploying: Deploy → Manage deployments → Edit → New version
+
+Dashboard shows no data:
+→ Click Refresh Data
+→ Check that students submitted successfully
+→ Check your Google Sheet "Results" tab directly
+
+Students can't submit offline:
+→ The quiz works offline; submission requires internet
+→ If no internet: students note their F1–F5 scores, teacher enters manually
+
+═══════════════════════════════════════════════════════════════
+SUPPORT
+═══════════════════════════════════════════════════════════════
+
+Built on: 5-Factor Work Function Model
+Theory: Simon · Kahneman · Fayol · Taylor · Newell & Simon · Mintzberg · Weick
