@@ -1,1 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5-Factor Work Assessment — Classroom Tool</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #080c18; color: #e2e8f0; min-height: 100vh; }
 
+  .tab-bar { display: flex; background: #0d1120; border-bottom: 1px solid #1a2040; position: sticky; top: 0; z-index: 100; }
+  .tab-btn { flex: 1; padding: 13px 4px; font-size: 11px; font-weight: 700; cursor: pointer; border: none; background: transparent; color: #334155; font-family: monospace; letter-spacing: 0.06em; transition: all 0.15s; }
+  .tab-btn.active { color: #818cf8; border-bottom: 2px solid #818cf8; background: #10142a; }
+
+  .pane { display: none; padding: 24px 16px 80px; max-width: 640px; margin: 0 auto; }
+  .pane.active { display: block; }
+
+  .card { background: #10142a; border: 1px solid #1a2040; border-radius: 16px; padding: 24px 20px; margin-bottom: 16px; }
+  .eyebrow { display: inline-block; background: #1a2040; color: #818cf8; font-size: 10px; font-weight: 800; letter-spacing: 0.14em; padding: 3px 10px; border-radius: 99px; margin-bottom: 14px; font-family: monospace; }
+  h1 { font-size: 24px; font-weight: 800; color: #f1f5f9; line-height: 1.2; margin-bottom: 10px; }
+  h2 { font-size: 17px; font-weight: 700; color: #e2e8f0; margin-bottom: 10px; }
+  p { color: #64748b; font-size: 14px; line-height: 1.65; margin-bottom: 10px; }
+
+  .field { width: 100%; background: #0d1120; border: 1px solid #1a2040; border-radius: 10px; padding: 11px 14px; color: #e2e8f0; font-size: 14px; outline: none; margin-bottom: 10px; }
+  .field:focus { border-color: #818cf8; }
+
+  .progress-wrap { margin-bottom: 20px; }
+  .progress-meta { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; }
+  .progress-bar-bg { background: #1a2040; border-radius: 99px; height: 4px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+  .factor-tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 99px; font-family: monospace; margin-bottom: 12px; }
+
+  .question-text { font-size: 18px; font-weight: 500; color: #e2e8f0; line-height: 1.55; min-height: 80px; margin-bottom: 24px; }
+  .likert-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+  .likert-btn { background: #1a2040; border: 2px solid transparent; border-radius: 12px; padding: 12px 6px; cursor: pointer; text-align: center; transition: all 0.12s; color: #475569; }
+  .likert-btn:hover { background: #252b45; }
+  .likert-btn.selected { background: rgba(129,140,248,0.15); }
+  .likert-btn .emoji { font-size: 20px; display: block; margin-bottom: 4px; }
+  .likert-btn .lbl { font-size: 10px; line-height: 1.3; }
+  .back-btn { background: transparent; border: none; color: #334155; font-size: 13px; cursor: pointer; display: block; margin: 8px auto 0; padding: 8px; }
+
+  .bar-wrap { background: #1a2040; border-radius: 99px; height: 6px; overflow: hidden; margin-top: 4px; }
+  .bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
+
+  .submit-btn { width: 100%; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; border: none; border-radius: 12px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 12px; }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .status-msg { text-align: center; font-size: 13px; margin-top: 10px; min-height: 18px; }
+
+  .section-label { color: #252b45; font-size: 10px; font-weight: 800; letter-spacing: 0.12em; font-family: monospace; margin-bottom: 10px; margin-top: 16px; }
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat-card { background: #0d1120; border: 1px solid #1a2040; border-radius: 12px; padding: 14px; text-align: center; }
+  .stat-num { font-size: 24px; font-weight: 800; color: #818cf8; font-family: monospace; }
+  .stat-lbl { font-size: 10px; color: #334155; margin-top: 4px; font-family: monospace; letter-spacing: 0.08em; }
+  .student-row { display: flex; align-items: center; gap: 10px; background: #0d1120; border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; }
+  .refresh-btn { background: #1a2040; border: 1px solid #252b45; color: #818cf8; border-radius: 10px; padding: 9px 20px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: monospace; display: inline-block; margin-right: 8px; }
+  .gap-pill { display: inline-block; font-size: 11px; font-family: monospace; padding: 4px 10px; border-radius: 8px; margin: 3px; }
+  .setup-box { background: #0d1120; border: 1px solid #252b45; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+  .setup-label { color: #334155; font-size: 12px; font-family: monospace; margin-bottom: 6px; }
+
+  /* ── CHAT ── */
+  .chat-feed { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; max-height: 420px; overflow-y: auto; }
+  .chat-bubble { background: #0d1120; border: 1px solid #1a2040; border-radius: 12px; padding: 12px 14px; position: relative; }
+  .chat-bubble.highlighted { border-color: #818cf8; background: rgba(129,140,248,0.08); }
+  .chat-name { color: #818cf8; font-size: 12px; font-weight: 700; font-family: monospace; margin-bottom: 4px; }
+  .chat-time { color: #252b45; font-size: 10px; font-family: monospace; margin-bottom: 6px; }
+  .chat-text { color: #cbd5e1; font-size: 14px; line-height: 1.55; }
+  .chat-actions { display: flex; gap: 6px; margin-top: 8px; }
+  .chat-copy-btn { background: #1a2040; border: none; color: #475569; font-size: 11px; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: monospace; }
+  .chat-copy-btn:hover { color: #818cf8; }
+  .chat-highlight-btn { background: #1a2040; border: none; color: #475569; font-size: 11px; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: monospace; }
+  .chat-highlight-btn.on { color: #fbbf24; }
+  .chat-input-wrap { display: flex; gap: 8px; align-items: flex-end; }
+  .chat-textarea { flex: 1; background: #0d1120; border: 1px solid #1a2040; border-radius: 10px; padding: 11px 14px; color: #e2e8f0; font-size: 14px; outline: none; resize: none; font-family: inherit; min-height: 60px; }
+  .chat-textarea:focus { border-color: #818cf8; }
+  .chat-send-btn { background: #6366f1; border: none; color: #fff; border-radius: 10px; padding: 11px 18px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .live-badge { display: inline-block; background: #052e16; color: #34d399; font-size: 10px; font-family: monospace; padding: 2px 8px; border-radius: 99px; margin-left: 8px; }
+  .copy-all-btn { background: #1a2040; border: 1px solid #252b45; color: #64748b; border-radius: 8px; padding: 7px 14px; font-size: 11px; cursor: pointer; font-family: monospace; }
+  .copy-all-btn:hover { color: #818cf8; }
+  .reply-bubble { background: rgba(129,140,248,0.08); border: 1px solid #818cf844; border-radius: 10px; padding: 10px 12px; margin-top: 8px; }
+  .reply-name { color: #818cf8; font-size: 11px; font-weight: 700; font-family: monospace; margin-bottom: 3px; }
+  .reply-text { color: #94a3b8; font-size: 13px; line-height: 1.5; }
+  .reply-input-wrap { display: flex; gap: 6px; margin-top: 10px; }
+  .reply-input { flex: 1; background: #080c18; border: 1px solid #252b45; border-radius: 8px; padding: 8px 10px; color: #e2e8f0; font-size: 13px; outline: none; font-family: inherit; }
+  .reply-input:focus { border-color: #818cf8; }
+  .reply-send-btn { background: #4338ca; border: none; color: #fff; border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('student',this)">📝 ASSESSMENT</button>
+  <button class="tab-btn" onclick="showTab('chat',this)">💬 CLASS CHAT</button>
+  <button class="tab-btn" onclick="showTab('teacher',this)">📊 DASHBOARD</button>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- TAB 1: STUDENT ASSESSMENT                      -->
+<!-- ══════════════════════════════════════════════ -->
+<div id="pane-student" class="pane active">
+
+  <div id="s-intro" class="card">
+    <div class="eyebrow">5-FACTOR WORK ASSESSMENT</div>
+    <h1>What kind of work<br>were you built for?</h1>
+    <p>15 questions · ~3 minutes · grounded in organizational theory</p>
+    <input class="field" id="student-name" placeholder="Full name..." style="margin-top:16px;" />
+    <select class="field" id="student-edlevel">
+      <option value="" disabled selected>Education level...</option>
+      <option>Undergraduate Year 1</option>
+      <option>Undergraduate Year 2</option>
+      <option>Undergraduate Year 3</option>
+      <option>Undergraduate Year 4</option>
+      <option>MBA</option>
+      <option>Executive MBA</option>
+      <option>PhD</option>
+      <option>Other</option>
+    </select>
+    <input class="field" id="student-program" placeholder="Program / Major (e.g. Management, Finance)..." />
+    <input class="field" id="student-semester" placeholder="Semester / Year (e.g. 1/2568) — optional" />
+    <button class="submit-btn" onclick="startQuiz()">Begin Assessment →</button>
+  </div>
+
+  <div id="s-quiz" class="card" style="display:none;">
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span id="q-counter" style="color:#334155;font-size:12px;"></span>
+        <span id="q-factor-tag" class="factor-tag"></span>
+      </div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="q-progress"></div></div>
+    </div>
+    <div class="question-text" id="q-text"></div>
+    <div class="likert-grid" id="q-likert"></div>
+    <button class="back-btn" id="q-back" onclick="prevQ()" style="display:none;">← Previous</button>
+  </div>
+
+  <div id="s-result" class="card" style="display:none;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:48px;margin-bottom:8px;" id="r-icon"></div>
+      <div style="font-size:22px;font-weight:800;color:#f1f5f9;margin-bottom:4px;" id="r-title"></div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:4px;" id="r-pct"></div>
+      <div style="color:#475569;font-size:13px;" id="r-logic"></div>
+    </div>
+    <div class="section-label">YOUR F1–F5 PROFILE</div>
+    <div id="r-radar" style="margin-bottom:16px;"></div>
+    <div id="r-bars"></div>
+    <div class="section-label" style="margin-top:16px;">TOP 5 MATCHES</div>
+    <div id="r-matches"></div>
+    <hr style="border-color:#1a2040;margin:16px 0;">
+    <p style="font-size:13px;color:#475569;margin-bottom:6px;">Submit your result to the class dashboard:</p>
+    <button class="submit-btn" id="r-submit-btn" onclick="submitResult()">Submit to Class →</button>
+    <div class="status-msg" id="r-status"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- TAB 2: CLASS CHAT                              -->
+<!-- ══════════════════════════════════════════════ -->
+<div id="pane-chat" class="pane">
+  <div class="card">
+    <div class="eyebrow">CLASS CHAT</div>
+    <h2>Share your thoughts <span class="live-badge">● LIVE</span></h2>
+    <p>Ask a question, share a reaction, or respond to the discussion. Your teacher sees all messages.</p>
+
+    <!-- Input -->
+    <div style="margin-bottom:16px;">
+      <input class="field" id="chat-name-input" placeholder="Your name..." style="margin-bottom:8px;" />
+      <div class="chat-input-wrap">
+        <textarea class="chat-textarea" id="chat-msg-input" placeholder="Type your message, question, or idea..." rows="2"></textarea>
+        <button class="chat-send-btn" onclick="sendChat()">Send</button>
+      </div>
+      <div class="status-msg" id="chat-status"></div>
+    </div>
+
+    <!-- Feed -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div class="section-label" style="margin:0;">MESSAGES</div>
+      <button class="copy-all-btn" onclick="copyAllMessages()">Copy all messages</button>
+    </div>
+    <div class="chat-feed" id="chat-feed">
+      <div style="color:#252b45;font-size:13px;text-align:center;padding:20px;">No messages yet — be the first!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- TAB 3: TEACHER DASHBOARD                       -->
+<!-- ══════════════════════════════════════════════ -->
+<div id="pane-teacher" class="pane">
+
+  <div class="card">
+    <div class="eyebrow">SETUP</div>
+    <h2>Connect to Google Sheet</h2>
+    <div class="setup-box">
+      <div class="setup-label">Apps Script Web App URL</div>
+      <input type="text" class="field" id="script-url-input" placeholder="https://script.google.com/macros/s/YOUR_ID/exec" style="margin-bottom:6px;" />
+      <button class="refresh-btn" onclick="saveScriptUrl()">Save URL</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">CLASS DASHBOARD</div>
+    <h2>Live Results</h2>
+    <div style="margin-bottom:16px;">
+      <button class="refresh-btn" onclick="loadDashboard()">⟳ Refresh Data</button>
+      <button class="copy-all-btn" onclick="exportSheet()">Export Sheet ↗</button>
+    </div>
+
+    <div class="dash-grid">
+      <div class="stat-card"><div class="stat-num" id="d-count">—</div><div class="stat-lbl">STUDENTS</div></div>
+      <div class="stat-card"><div class="stat-num" id="d-toptype">—</div><div class="stat-lbl">TOP TYPE</div></div>
+      <div class="stat-card"><div class="stat-num" id="d-topedu">—</div><div class="stat-lbl">TOP LEVEL</div></div>
+    </div>
+
+    <div class="section-label">CLASS AVERAGE PROFILE</div>
+    <div id="d-radar" style="margin-bottom:12px;"></div>
+    <div id="d-avg-bars"></div>
+
+    <div class="section-label">COVERAGE GAPS</div>
+    <div id="d-gaps"></div>
+
+    <div class="section-label">EDUCATION BREAKDOWN</div>
+    <div id="d-edlevel"></div>
+
+    <div class="section-label">TYPE DISTRIBUTION</div>
+    <div id="d-distribution"></div>
+
+    <div class="section-label">ALL STUDENTS</div>
+    <div id="d-students"></div>
+  </div>
+
+  <!-- CHAT MODERATION -->
+  <div class="card">
+    <div class="eyebrow">CHAT MODERATION</div>
+    <h2>All Messages <span class="live-badge">● LIVE</span></h2>
+    <div style="margin-bottom:12px;display:flex;gap:8px;">
+      <button class="refresh-btn" onclick="loadTeacherChat()">⟳ Refresh</button>
+      <button class="copy-all-btn" onclick="copyAllTeacherMessages()">Copy all</button>
+    </div>
+    <div class="chat-feed" id="teacher-chat-feed">
+      <div style="color:#252b45;font-size:13px;text-align:center;padding:20px;">No messages yet.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════
+const FACTORS = [
+  {id:"F1",label:"Decide",  thai:"การตัดสินใจ",  color:"#818cf8"},
+  {id:"F2",label:"Plan",    thai:"การวางโครง",   color:"#38bdf8"},
+  {id:"F3",label:"Execute", thai:"การลงมือ",     color:"#34d399"},
+  {id:"F4",label:"Solve",   thai:"การแก้ปัญหา",  color:"#fbbf24"},
+  {id:"F5",label:"Coordinate",thai:"การประสานคน",color:"#f472b6"},
+];
+
+const QUESTIONS = [
+  {factor:"F1",text:"I make a call and move forward even when I have only 60–70% of the information I'd ideally want."},
+  {factor:"F1",text:"When two options both have merit, I feel more discomfort delaying the choice than making the wrong one."},
+  {factor:"F1",text:"I'm comfortable being accountable for outcomes that result from my decisions under uncertainty."},
+  {factor:"F2",text:"Before starting a complex task, I naturally map out the steps and dependencies first."},
+  {factor:"F2",text:"I find it satisfying to design a system or framework that others can follow repeatedly."},
+  {factor:"F2",text:"I tend to anticipate failure points in a plan before they happen."},
+  {factor:"F3",text:"I get real satisfaction from completing tasks and hitting concrete deliverables."},
+  {factor:"F3",text:"I can sustain quality work on structured or repetitive tasks without losing focus."},
+  {factor:"F3",text:"When a project stalls, my instinct is to unblock it by doing something rather than analyzing why."},
+  {factor:"F4",text:"I find it genuinely engaging to dig into a problem until I understand its root cause, not just its symptom."},
+  {factor:"F4",text:"I question assumptions others treat as fixed when diagnosing a problem."},
+  {factor:"F4",text:"Analytical or technical challenges energize me more than social or coordination ones."},
+  {factor:"F5",text:"I naturally track how different people's goals relate and where they might conflict."},
+  {factor:"F5",text:"I adjust how I communicate depending on who I'm talking to and what they need to hear."},
+  {factor:"F5",text:"I feel responsible for making sure everyone involved in a task has a shared understanding of what's happening."},
+];
+
+const JOBS = [
+  {name:"Startup Founder",     icon:"🚀",F1:1.0,F2:0.8,F3:0.7,F4:0.8,F5:0.9,logic:"Decision + coordination under uncertainty"},
+  {name:"Product Manager",     icon:"📋",F1:0.9,F2:0.9,F3:0.6,F4:0.8,F5:0.9,logic:"Planning + decision + coordination"},
+  {name:"Strategy Consultant", icon:"🧭",F1:0.9,F2:0.9,F3:0.4,F4:0.9,F5:0.7,logic:"Analysis + decision + planning"},
+  {name:"Engineer/Tech Solver",icon:"🔧",F1:0.6,F2:0.5,F3:0.8,F4:1.0,F5:0.5,logic:"Deep problem-solving + execution"},
+  {name:"Operations Manager",  icon:"⚙️",F1:0.6,F2:0.8,F3:0.9,F4:0.6,F5:0.7,logic:"Execution + system stability"},
+  {name:"Crisis Manager",      icon:"🔥",F1:1.0,F2:0.5,F3:0.9,F4:1.0,F5:0.8,logic:"Decision + solve under pressure"},
+  {name:"HR / Coordinator",    icon:"🤝",F1:0.6,F2:0.6,F3:0.5,F4:0.5,F5:1.0,logic:"People alignment + communication"},
+  {name:"Project Manager",     icon:"📐",F1:0.7,F2:0.9,F3:0.7,F4:0.7,F5:0.9,logic:"System design + delivery"},
+  {name:"Data Scientist",      icon:"🔢",F1:0.6,F2:0.7,F3:0.6,F4:1.0,F5:0.5,logic:"Analytical depth + modeling"},
+  {name:"Creative Director",   icon:"🎨",F1:0.8,F2:0.6,F3:0.5,F4:0.6,F5:0.7,logic:"Vision + decision + creative coordination"},
+];
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let current = 0;
+let answers = {};
+let studentName = "";
+let studentEdLevel = "";
+let studentProgram = "";
+let studentSemester = "";
+let computedVec = null;
+let computedTop = null;
+let SCRIPT_URL = localStorage.getItem("scriptUrl") || "";
+let chatRefreshTimer = null;
+
+// ═══════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════
+function showTab(tab, btn) {
+  document.querySelectorAll(".pane").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("pane-" + tab).classList.add("active");
+  btn.classList.add("active");
+  if (tab === "teacher") { loadDashboard(); loadTeacherChat(); }
+  if (tab === "chat") {
+    // auto-fill name from assessment
+    if (studentName) document.getElementById("chat-name-input").value = studentName;
+    startChatRefresh();
+    loadChat();
+  } else {
+    stopChatRefresh();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════════════════════════════
+function startQuiz() {
+  studentName     = document.getElementById("student-name").value.trim();
+  studentEdLevel  = document.getElementById("student-edlevel").value;
+  studentProgram  = document.getElementById("student-program").value.trim();
+  studentSemester = document.getElementById("student-semester").value.trim();
+  if (!studentName)    { alert("Please enter your name."); return; }
+  if (!studentEdLevel) { alert("Please select your education level."); return; }
+  if (!studentProgram) { alert("Please enter your program / major."); return; }
+  document.getElementById("s-intro").style.display = "none";
+  document.getElementById("s-quiz").style.display = "block";
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[current];
+  const f = FACTORS.find(x => x.id === q.factor);
+  document.getElementById("q-counter").textContent = `Question ${current+1} of ${QUESTIONS.length}`;
+  document.getElementById("q-factor-tag").textContent = `${f.id} · ${f.label} · ${f.thai}`;
+  document.getElementById("q-factor-tag").style.background = f.color + "18";
+  document.getElementById("q-factor-tag").style.color = f.color;
+  document.getElementById("q-progress").style.width = (current/QUESTIONS.length*100) + "%";
+  document.getElementById("q-progress").style.background = f.color;
+  document.getElementById("q-text").textContent = q.text;
+  document.getElementById("q-back").style.display = current > 0 ? "block" : "none";
+  const labels = ["Strongly disagree","Somewhat disagree","Somewhat agree","Strongly agree"];
+  const emojis = ["😕","🤔","👍","💯"];
+  const grid = document.getElementById("q-likert");
+  grid.innerHTML = "";
+  labels.forEach((lbl,i) => {
+    const btn = document.createElement("button");
+    btn.className = "likert-btn" + (answers[current]===i?" selected":"");
+    btn.style.borderColor = answers[current]===i ? f.color : "transparent";
+    btn.innerHTML = `<span class="emoji">${emojis[i]}</span><span class="lbl">${lbl}</span>`;
+    btn.onclick = () => handleAnswer(i);
+    grid.appendChild(btn);
+  });
+}
+
+function handleAnswer(val) {
+  answers[current] = val;
+  if (current < QUESTIONS.length-1) { current++; setTimeout(renderQuestion,150); }
+  else { showResult(); }
+}
+
+function prevQ() { if (current>0) { current--; renderQuestion(); } }
+
+// ═══════════════════════════════════════════════════════════
+// SCORING
+// ═══════════════════════════════════════════════════════════
+function computeVector() {
+  const sums={F1:0,F2:0,F3:0,F4:0,F5:0}, counts={F1:0,F2:0,F3:0,F4:0,F5:0};
+  QUESTIONS.forEach((q,i) => { if(answers[i]!==undefined){ sums[q.factor]+=answers[i]/3; counts[q.factor]++; } });
+  const vec={};
+  FACTORS.forEach(f => { vec[f.id]=counts[f.id]>0?sums[f.id]/counts[f.id]:0; });
+  return vec;
+}
+
+function dotScore(vec,job) {
+  let sum=0,max=0;
+  FACTORS.forEach(f => { sum+=vec[f.id]*job[f.id]; max+=job[f.id]; });
+  return sum/max;
+}
+
+// ═══════════════════════════════════════════════════════════
+// RADAR
+// ═══════════════════════════════════════════════════════════
+function makeRadar(vec, size, jobVec) {
+  const cx=size/2,cy=size/2,r=size*0.36;
+  const ang=i=>Math.PI*2*i/5-Math.PI/2;
+  const pt=(i,radius)=>({x:cx+radius*Math.cos(ang(i)),y:cy+radius*Math.sin(ang(i))});
+  let svg=`<svg width="${size}" height="${size}">`;
+  [0.25,0.5,0.75,1.0].forEach(lvl=>{
+    const pts=FACTORS.map((_,i)=>{const p=pt(i,lvl*r);return`${p.x},${p.y}`;}).join(" ");
+    svg+=`<polygon points="${pts}" fill="none" stroke="#1a2040" stroke-width="1"/>`;
+  });
+  FACTORS.forEach((_,i)=>{const e=pt(i,r);svg+=`<line x1="${cx}" y1="${cy}" x2="${e.x}" y2="${e.y}" stroke="#1a2040" stroke-width="1"/>`;});
+  if(jobVec){
+    const jpts=FACTORS.map((f,i)=>{const p=pt(i,jobVec[f.id]*r);return`${p.x},${p.y}`;}).join(" ");
+    svg+=`<polygon points="${jpts}" fill="rgba(251,191,36,0.08)" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+  }
+  const ppts=FACTORS.map((f,i)=>{const p=pt(i,vec[f.id]*r);return`${p.x},${p.y}`;}).join(" ");
+  svg+=`<polygon points="${ppts}" fill="rgba(129,140,248,0.2)" stroke="#818cf8" stroke-width="2.5"/>`;
+  FACTORS.forEach((f,i)=>{const p=pt(i,vec[f.id]*r);svg+=`<circle cx="${p.x}" cy="${p.y}" r="4" fill="${f.color}"/>`;});
+  FACTORS.forEach((f,i)=>{const lp=pt(i,r*1.28);svg+=`<text x="${lp.x}" y="${lp.y}" text-anchor="middle" dominant-baseline="middle" fill="${f.color}" font-size="11" font-weight="700" font-family="monospace">${f.id}</text>`;});
+  svg+="</svg>";
+  return svg;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SHOW RESULT
+// ═══════════════════════════════════════════════════════════
+function showResult() {
+  document.getElementById("s-quiz").style.display="none";
+  document.getElementById("s-result").style.display="block";
+  const vec=computeVector();
+  computedVec=vec;
+  const scored=JOBS.map(j=>({...j,score:dotScore(vec,j)})).sort((a,b)=>b.score-a.score);
+  const top=scored[0];
+  computedTop=top;
+  document.getElementById("r-icon").textContent=top.icon;
+  document.getElementById("r-title").textContent=top.name;
+  document.getElementById("r-pct").textContent=Math.round(top.score*100)+"% match";
+  document.getElementById("r-pct").style.color="#818cf8";
+  document.getElementById("r-logic").textContent=top.logic;
+  const topVec={F1:top.F1,F2:top.F2,F3:top.F3,F4:top.F4,F5:top.F5};
+  document.getElementById("r-radar").innerHTML=makeRadar(vec,200,topVec);
+  let barsHtml="";
+  FACTORS.forEach(f=>{
+    barsHtml+=`<div style="margin-bottom:9px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px;font-size:12px;">
+        <span style="color:${f.color};font-family:monospace;font-weight:700;">${f.id} ${f.label}</span>
+        <span style="color:#475569;">${(vec[f.id]*100).toFixed(0)}</span>
+      </div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:${vec[f.id]*100}%;background:${f.color};"></div></div>
+    </div>`;
+  });
+  document.getElementById("r-bars").innerHTML=barsHtml;
+  let matchHtml="";
+  scored.slice(0,5).forEach((j,idx)=>{
+    matchHtml+=`<div style="display:flex;align-items:center;gap:10px;background:#0d1120;border-radius:10px;padding:9px 12px;margin-bottom:7px;${idx===0?'border:1px solid #818cf8aa;':''}">
+      <span style="font-size:17px;">${j.icon}</span>
+      <div style="flex:1;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+          <span style="color:${idx===0?'#f1f5f9':'#94a3b8'};font-size:13px;font-weight:${idx===0?700:400};">${idx===0?'★ ':''}${j.name}</span>
+          <span style="color:#818cf8;font-weight:800;font-family:monospace;font-size:13px;">${Math.round(j.score*100)}%</span>
+        </div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${j.score*100}%;background:#818cf8;"></div></div>
+      </div>
+    </div>`;
+  });
+  document.getElementById("r-matches").innerHTML=matchHtml;
+  // auto-fill chat name
+  document.getElementById("chat-name-input").value=studentName;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SUBMIT ASSESSMENT
+// ═══════════════════════════════════════════════════════════
+async function submitResult() {
+  if(!SCRIPT_URL){ setStatus("r-status","⚠️ No Apps Script URL. Ask your teacher.","#fbbf24"); return; }
+  const btn=document.getElementById("r-submit-btn");
+  btn.disabled=true; btn.textContent="Submitting...";
+  const payload={
+    action:"saveResult",
+    name:studentName, edLevel:studentEdLevel, program:studentProgram, semester:studentSemester,
+    timestamp:new Date().toISOString(),
+    F1:computedVec.F1.toFixed(3),F2:computedVec.F2.toFixed(3),F3:computedVec.F3.toFixed(3),
+    F4:computedVec.F4.toFixed(3),F5:computedVec.F5.toFixed(3),
+    topMatch:computedTop.name, fitScore:(computedTop.score*100).toFixed(1),
+  };
+  try {
+    await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    btn.textContent="✓ Submitted!"; btn.style.background="#065f46";
+    setStatus("r-status","Your result has been saved to the class dashboard.","#34d399");
+  } catch(e) {
+    btn.disabled=false; btn.textContent="Submit to Class →";
+    setStatus("r-status","⚠️ Could not connect. Check URL with your teacher.","#f87171");
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHAT
+// ═══════════════════════════════════════════════════════════
+async function sendChat() {
+  if(!SCRIPT_URL){ setStatus("chat-status","⚠️ No Apps Script URL configured.","#fbbf24"); return; }
+  const name=document.getElementById("chat-name-input").value.trim();
+  const msg=document.getElementById("chat-msg-input").value.trim();
+  if(!name){ alert("Please enter your name."); return; }
+  if(!msg){ alert("Please type a message."); return; }
+  const payload={action:"saveChat", name, message:msg, timestamp:new Date().toISOString()};
+  try {
+    await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    document.getElementById("chat-msg-input").value="";
+    setStatus("chat-status","Message sent!","#34d399");
+    setTimeout(()=>setStatus("chat-status","",""),2000);
+    setTimeout(loadChat,800);
+  } catch(e) {
+    setStatus("chat-status","⚠️ Could not send. Check connection.","#f87171");
+  }
+}
+
+async function sendReply(threadIdx, studentName) {
+  if (!SCRIPT_URL) return;
+  const input = document.getElementById("reply-input-" + threadIdx);
+  if (!input) return;
+  const msg = input.value.trim();
+  if (!msg) return;
+  const payload = {
+    action: "saveChat",
+    name: "👨‍🏫 Teacher",
+    message: msg,
+    timestamp: new Date().toISOString(),
+    replyTo: studentName,
+  };
+  try {
+    await fetch(SCRIPT_URL, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
+    input.value = "";
+    setTimeout(loadTeacherChat, 800);
+    setTimeout(loadChat, 800);
+  } catch(e) {
+    alert("Could not send reply. Check connection.");
+  }
+}
+
+async function loadChat() {
+  if(!SCRIPT_URL) return;
+  try {
+    const controller = new AbortController();
+    const tid = setTimeout(()=>controller.abort(), 8000);
+    const res = await fetch(SCRIPT_URL+"?action=getChat", {signal:controller.signal});
+    clearTimeout(tid);
+    const data = await res.json();
+    renderChatFeed("chat-feed", data, false);
+  } catch(e) {}
+}
+
+async function loadTeacherChat() {
+  if(!SCRIPT_URL) return;
+  try {
+    const controller = new AbortController();
+    const tid = setTimeout(()=>controller.abort(), 8000);
+    const res = await fetch(SCRIPT_URL+"?action=getChat", {signal:controller.signal});
+    clearTimeout(tid);
+    const data = await res.json();
+    renderChatFeed("teacher-chat-feed", data, true);
+  } catch(e) {}
+}
+
+function renderChatFeed(feedId, messages, isTeacher) {
+  const feed = document.getElementById(feedId);
+  if (!messages || messages.length === 0) {
+    feed.innerHTML = '<div style="color:#252b45;font-size:13px;text-align:center;padding:20px;">No messages yet.</div>';
+    return;
+  }
+  // group: student messages + teacher replies underneath
+  // teacher messages (name === "👨‍🏫 Teacher") are replies
+  const threads = [];
+  messages.forEach(m => {
+    if (m.name === "👨‍🏫 Teacher") {
+      // attach to last thread as reply
+      if (threads.length > 0) threads[threads.length-1].replies.push(m);
+    } else {
+      threads.push({ msg: m, replies: [] });
+    }
+  });
+
+  feed.innerHTML = threads.map((thread, i) => {
+    const m = thread.msg;
+    const time = m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : "";
+    const repliesHtml = thread.replies.map(r => {
+      const rtime = r.timestamp ? new Date(r.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : "";
+      return `<div class="reply-bubble">
+        <div class="reply-name">👨‍🏫 Teacher · ${rtime}</div>
+        <div class="reply-text">${r.message}</div>
+      </div>`;
+    }).join("");
+
+    const replyBox = isTeacher ? `
+      <div class="reply-input-wrap">
+        <input class="reply-input" id="reply-input-${i}" placeholder="Reply to ${m.name}..." />
+        <button class="reply-send-btn" onclick="sendReply(${i},'${escapeQ(m.name)}')">Reply →</button>
+      </div>` : "";
+
+    const highlightBtn = isTeacher ? `
+      <button class="chat-highlight-btn ${m.highlighted?'on':''}" onclick="toggleHighlight(${i},'${feedId}')">
+        ${m.highlighted ? '★ Pinned' : '☆ Pin'}
+      </button>` : "";
+
+    return `<div class="chat-bubble ${m.highlighted?'highlighted':''}">
+      <div class="chat-name">${m.name}</div>
+      <div class="chat-time">${time}</div>
+      <div class="chat-text">${m.message}</div>
+      <div class="chat-actions">
+        <button class="chat-copy-btn" onclick="copyMessage('${escapeQ(m.name)}','${escapeQ(m.message)}')">Copy</button>
+        ${highlightBtn}
+      </div>
+      ${repliesHtml}
+      ${replyBox}
+    </div>`;
+  }).join("");
+}
+
+function escapeQ(str){ return (str||"").replace(/'/g,"\\'").replace(/\n/g," "); }
+
+function copyMessage(name, msg) {
+  const text=`${name}: ${msg}`;
+  navigator.clipboard.writeText(text).then(()=>{
+    alert("Copied!");
+  }).catch(()=>{
+    prompt("Copy this:",text);
+  });
+}
+
+function copyAllMessages() {
+  const feed=document.getElementById("chat-feed");
+  const bubbles=feed.querySelectorAll(".chat-bubble");
+  let text="";
+  bubbles.forEach(b=>{
+    const name=b.querySelector(".chat-name")?.textContent||"";
+    const time=b.querySelector(".chat-time")?.textContent||"";
+    const msg=b.querySelector(".chat-text")?.textContent||"";
+    text+=`[${time}] ${name}: ${msg}\n`;
+  });
+  navigator.clipboard.writeText(text).then(()=>alert("All messages copied!")).catch(()=>prompt("Copy:",text));
+}
+
+function copyAllTeacherMessages() {
+  const feed=document.getElementById("teacher-chat-feed");
+  const bubbles=feed.querySelectorAll(".chat-bubble");
+  let text="";
+  bubbles.forEach(b=>{
+    const name=b.querySelector(".chat-name")?.textContent||"";
+    const time=b.querySelector(".chat-time")?.textContent||"";
+    const msg=b.querySelector(".chat-text")?.textContent||"";
+    text+=`[${time}] ${name}: ${msg}\n`;
+  });
+  navigator.clipboard.writeText(text).then(()=>alert("All messages copied!")).catch(()=>prompt("Copy:",text));
+}
+
+async function toggleHighlight(idx, feedId) {
+  // For now just visual toggle — full backend highlight requires additional Apps Script function
+  const feed=document.getElementById(feedId);
+  const bubbles=feed.querySelectorAll(".chat-bubble");
+  if(bubbles[idx]){
+    bubbles[idx].classList.toggle("highlighted");
+    const btn=bubbles[idx].querySelector(".chat-highlight-btn");
+    if(btn){ btn.classList.toggle("on"); btn.textContent=btn.classList.contains("on")?"★ Highlighted":"☆ Highlight"; }
+  }
+}
+
+function startChatRefresh() {
+  stopChatRefresh();
+  chatRefreshTimer=setInterval(()=>{ try{loadChat();}catch(e){} },20000);
+}
+
+function stopChatRefresh() {
+  if(chatRefreshTimer){ clearInterval(chatRefreshTimer); chatRefreshTimer=null; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// TEACHER DASHBOARD
+// ═══════════════════════════════════════════════════════════
+function saveScriptUrl() {
+  const url=document.getElementById("script-url-input").value.trim();
+  if(!url) return;
+  SCRIPT_URL=url; localStorage.setItem("scriptUrl",url);
+  alert("URL saved!");
+}
+
+if(SCRIPT_URL) document.getElementById("script-url-input").value=SCRIPT_URL;
+
+async function loadDashboard() {
+  if(!SCRIPT_URL){ document.getElementById("d-students").innerHTML='<p style="color:#334155;font-size:13px;">Paste your Apps Script URL above first.</p>'; return; }
+  try {
+    const controller = new AbortController();
+    const tid = setTimeout(()=>controller.abort(), 10000);
+    const res=await fetch(SCRIPT_URL+"?action=getAll", {signal:controller.signal});
+    clearTimeout(tid);
+    const data=await res.json();
+    renderDashboard(data);
+  } catch(e) {
+    document.getElementById("d-students").innerHTML='<p style="color:#f87171;font-size:13px;">Could not load data. Check URL or try again.</p>';
+  }
+}
+
+function renderDashboard(rows) {
+  if(!rows||rows.length===0){
+    document.getElementById("d-students").innerHTML='<p style="color:#334155;font-size:13px;">No submissions yet.</p>';
+    document.getElementById("d-count").textContent="0";
+    return;
+  }
+  document.getElementById("d-count").textContent=rows.length;
+  const typeCounts={}, edCounts={};
+  rows.forEach(r=>{
+    typeCounts[r.topMatch]=(typeCounts[r.topMatch]||0)+1;
+    edCounts[r.edLevel||"Unknown"]=(edCounts[r.edLevel||"Unknown"]||0)+1;
+  });
+  const topType=Object.entries(typeCounts).sort((a,b)=>b[1]-a[1])[0];
+  const topEdu=Object.entries(edCounts).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById("d-toptype").textContent=topType?topType[0].split(" ")[0]:"—";
+  document.getElementById("d-topedu").textContent=topEdu?topEdu[0].split(" ")[0]:"—";
+  const avg={F1:0,F2:0,F3:0,F4:0,F5:0};
+  rows.forEach(r=>{ FACTORS.forEach(f=>{ avg[f.id]+=parseFloat(r[f.id])||0; }); });
+  FACTORS.forEach(f=>{ avg[f.id]/=rows.length; });
+  document.getElementById("d-radar").innerHTML=makeRadar(avg,200,null);
+  let avgHtml="";
+  FACTORS.forEach(f=>{
+    avgHtml+=`<div style="margin-bottom:9px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px;font-size:12px;">
+        <span style="color:${f.color};font-family:monospace;font-weight:700;">${f.id} ${f.label}</span>
+        <span style="color:#475569;">${(avg[f.id]*100).toFixed(0)}</span>
+      </div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:${avg[f.id]*100}%;background:${f.color};"></div></div>
+    </div>`;
+  });
+  document.getElementById("d-avg-bars").innerHTML=avgHtml;
+  let gapsHtml="";
+  FACTORS.forEach(f=>{
+    const v=avg[f.id];
+    const color=v>=0.65?"#34d399":v>=0.4?"#fbbf24":"#f87171";
+    const label=v>=0.65?"Strong":v>=0.4?"Moderate":"GAP";
+    gapsHtml+=`<span class="gap-pill" style="background:${color}18;border:1px solid ${color}40;color:${color};">${f.id} ${label} ${(v*100).toFixed(0)}</span>`;
+  });
+  document.getElementById("d-gaps").innerHTML=gapsHtml;
+  let edHtml="";
+  Object.entries(edCounts).sort((a,b)=>b[1]-a[1]).forEach(([level,count])=>{
+    edHtml+=`<div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;">
+      <span style="color:#818cf8;font-family:monospace;">${level}</span>
+      <span style="color:#475569;">${count} students</span>
+    </div>`;
+  });
+  document.getElementById("d-edlevel").innerHTML=edHtml;
+  let distHtml="";
+  Object.entries(typeCounts).sort((a,b)=>b[1]-a[1]).forEach(([type,count])=>{
+    const job=JOBS.find(j=>j.name===type);
+    distHtml+=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
+      <span style="font-size:16px;">${job?job.icon:"👤"}</span>
+      <span style="color:#94a3b8;font-size:13px;flex:1;">${type}</span>
+      <span style="color:#818cf8;font-family:monospace;font-weight:700;">${count}</span>
+    </div>`;
+  });
+  document.getElementById("d-distribution").innerHTML=distHtml;
+  let studHtml="";
+  rows.forEach(r=>{
+    const job=JOBS.find(j=>j.name===r.topMatch);
+    studHtml+=`<div class="student-row">
+      <span style="font-size:18px;width:28px;text-align:center;">${job?job.icon:"👤"}</span>
+      <div style="flex:1;">
+        <div style="color:#e2e8f0;font-size:13px;font-weight:600;">${r.name}</div>
+        <div style="color:#334155;font-size:11px;">${r.topMatch} · ${r.edLevel||""} · ${r.program||""}</div>
+      </div>
+      <span style="color:#818cf8;font-weight:800;font-family:monospace;font-size:13px;">${r.fitScore}%</span>
+    </div>`;
+  });
+  document.getElementById("d-students").innerHTML=studHtml;
+}
+
+function exportSheet() {
+  alert("Go to your Google Sheet to export as Excel or CSV:\nFile → Download → .xlsx or .csv");
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════
+function setStatus(id,msg,color){
+  const el=document.getElementById(id);
+  if(el){el.textContent=msg;el.style.color=color;}
+}
+</script>
+</body>
+</html>
